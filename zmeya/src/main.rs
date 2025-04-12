@@ -1,47 +1,34 @@
-const FIELD_WIDTH: usize = 60;
-const FIELD_HEIGHT: usize = 20;
-const FIELD_WIDTH_FINISH_IDX: usize = FIELD_WIDTH - 1;
-const FIELD_HEIGHT_FINISH_IDX: usize = FIELD_HEIGHT - 1;
-type Field = [[char; FIELD_WIDTH]; FIELD_HEIGHT];
+const MAP_WIDTH: usize = 60;
+const MAP_HEIGHT: usize = 20;
+type Map = [[char; MAP_WIDTH]; MAP_HEIGHT];
 
-fn cell_initializer(x: usize, y: usize) -> char {
-    match (x, y) {
-        (0, 0) => '╔',
-        (FIELD_WIDTH_FINISH_IDX, 0) =>  '╗',
-        (0, FIELD_HEIGHT_FINISH_IDX) => '╚',
-        (FIELD_WIDTH_FINISH_IDX, FIELD_HEIGHT_FINISH_IDX) => '╝',
-        (_, 0) | (_, FIELD_HEIGHT_FINISH_IDX) => '═',
-        (0, _) | (FIELD_WIDTH_FINISH_IDX, _) => '║',
-        _ => ' ',
-    }
-}
-
-fn init_field(field: &mut Field){
-    for y in 0..FIELD_HEIGHT {
-        for x in 0..FIELD_WIDTH {
-            field[y][x] = cell_initializer(x, y);
-        }
-    }
-}
-
-fn show_field(field: Field) {
-    let mut field_str = String::from("");
-    for row in field.iter() {
+fn show(map: &Map) {
+    let mut map_str = String::from("╔");
+    map_str.push_str(&"═".repeat(MAP_WIDTH));
+    map_str.push_str("╗\n");
+    for row in map.iter() {
+        map_str.push('║');
         for cell in row.iter(){
-            field_str.push(*cell);
+            map_str.push(*cell);
         }
-        field_str.push('\n');
+        map_str.push_str("║\n");
     }
-    print!("{}", field_str)
+    map_str.push_str("╚");
+    map_str.push_str(&"═".repeat(MAP_WIDTH));
+    map_str.push_str("╝");
+    print!("{}", map_str)
 }
 
-fn build_field() {
-    let mut field: Field = [['0'; FIELD_WIDTH]; FIELD_HEIGHT];
-    init_field(&mut field);
-    show_field(field);
+fn start(map: Map) {
+    show(&map);
 }
 
+fn init_map() -> Map{
+    let mut map: Map = [['0'; MAP_WIDTH]; MAP_HEIGHT];
+    map
+}
 
 fn main() {
-    build_field();
+    let mut map: Map = init_map();
+    start(map);
 }
