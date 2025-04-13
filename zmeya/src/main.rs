@@ -168,7 +168,7 @@ fn get_rand_target(obstacles: &HashSet<Point>) -> Point {
 fn show_end_of_game(actor: &Actor) {
     update_map(actor.body_queue.front().unwrap(), '░', Color::Red);
     println!("Game over! Thanks for playing!✨");
-    print!("Press any key to exit...");
+    print!("Press Enter to exit...");
     stdout().flush().expect("Failed to flush stdout");
     std::io::stdin().read_line(&mut String::new()).unwrap();
 }
