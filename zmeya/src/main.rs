@@ -170,7 +170,7 @@ fn show_end_of_game(actor: &Actor) {
     println!("Game over! Thanks for playing!✨");
     print!("Press any key to exit . . .");
     stdout().flush().expect("Failed to flush stdout");
-    sleep(Duration::from_millis(1000));
+    sleep(Duration::from_millis(400));
     let _ = console::get_user_input();
     loop {
         let input = console::get_user_input();
