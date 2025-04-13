@@ -7,7 +7,7 @@ use std::time::Duration;
 const MAP_WIDTH: usize = 30;
 const MAP_HEIGHT: usize = 20;
 
-const DELAY: Duration = Duration::from_millis(100);
+const DELAY: Duration = Duration::from_millis(75);
 const ACTOR_COLOR: Color = Color::BrightRed;
 
 #[derive(Eq, PartialEq)]
@@ -166,6 +166,7 @@ fn get_rand_target(obstacles: &HashSet<Point>) -> Point {
 
 fn show_end_of_game(actor: &Actor) {
     update_map(actor.body_queue.front().unwrap(), '░', Color::Red);
+    println!("Game over! Thanks for playing!✨");
 }
 
 fn process_rules(actor: &mut Actor, target: &mut Point, obstacles: &mut HashSet<Point>) -> u8{
