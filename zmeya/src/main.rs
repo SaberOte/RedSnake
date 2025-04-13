@@ -157,6 +157,7 @@ fn process_rules(actor: &Actor, target: &mut Point) -> u8{
         let new_target = get_rand_point();
         target.x = new_target.x;
         target.y = new_target.y;
+        paint_map(target);
         return 1;
     }
 
