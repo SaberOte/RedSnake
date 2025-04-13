@@ -150,6 +150,10 @@ fn get_rand_target(obstacles: &HashSet<Point>) -> Point {
     }
 }
 
+fn show_end_of_game(actor: &Actor) {
+    update_map(actor.body_queue.front().unwrap(), 'X');
+}
+
 fn process_rules(actor: &mut Actor, target: &mut Point, obstacles: &mut HashSet<Point>) -> u8{
     let head = actor.body_queue.front().unwrap();
     let x: i16 = head.x;
@@ -170,13 +174,7 @@ fn process_rules(actor: &mut Actor, target: &mut Point, obstacles: &mut HashSet<
 
     // target is eaten
     if x == target.x && y == target.y {
-        let mut new_target;
-        loop {
-            new_target = get_rand_target(&obstacles);
-            if !obstacles.contains(&target){
-                break;
-            }
-        }
+        let new_target = get_rand_target(&obstacles);
         target.x = new_target.x;
         target.y = new_target.y;
         paint_map(target);
@@ -195,6 +193,10 @@ fn start(mut actor: Actor, mut target: Point, mut obstacles: HashSet<Point>) {
         process_user_input(&mut actor);
         make_step(&mut actor, game_status != 1, &mut obstacles);
         game_status = process_rules(&mut actor, &mut target, &mut obstacles);
+    }
+
+    if game_status == 2 {
+        show_end_of_game(&actor);
     }
 }
 
