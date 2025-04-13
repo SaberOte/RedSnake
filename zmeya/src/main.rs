@@ -41,9 +41,9 @@ fn show(actor: &Actor, target: &Point) {
         lower_border
     );
 
-    let (cursor_x, cursor_y) = console::get_cursor().unwrap();
     println!("{}", map);
-    console::set_cursor(cursor_x, cursor_y);
+    let (cursor_x, cursor_y) = console::get_cursor().unwrap();
+    // console::set_cursor(cursor_x, cursor_y);
 
     // show actor
     for point in actor.body_queue.iter() {
@@ -68,8 +68,8 @@ fn update_map(point: &Point, value: char, color: Color) {
     let text: String = format!("\x1b[{}m{}{}\x1b[0m", color_code, value, value);
 
     console::update_screen(
-        cursor_x + 1 + x * 2,
-        cursor_y + 1 + y,
+        1 + x * 2,
+        1 + y,
         text);
     console::set_cursor(cursor_x, cursor_y);
 }
