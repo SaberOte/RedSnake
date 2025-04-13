@@ -7,7 +7,7 @@ use std::time::Duration;
 const MAP_WIDTH: usize = 30;
 const MAP_HEIGHT: usize = 20;
 
-const DELAY: Duration = Duration::from_millis(200);
+const DELAY: Duration = Duration::from_millis(100);
 
 #[derive(Eq, PartialEq)]
 #[derive(Hash)]
@@ -137,10 +137,16 @@ fn process_user_input(actor: &mut Actor) {
     }
 }
 
-fn get_rand_point() -> Point {
-    Point {
-        x: rand::random_range(0..MAP_WIDTH as i16),
-        y: rand::random_range(0..MAP_HEIGHT as i16)
+fn get_rand_target(obstacles: &HashSet<Point>) -> Point {
+    let mut target: Point;
+    loop {
+        target = Point {
+            x: rand::random_range(0..MAP_WIDTH as i16),
+            y: rand::random_range(0..MAP_HEIGHT as i16)
+        };
+        if !obstacles.contains(&target){
+            return target;
+        }
     }
 }
 
@@ -164,7 +170,13 @@ fn process_rules(actor: &mut Actor, target: &mut Point, obstacles: &mut HashSet<
 
     // target is eaten
     if x == target.x && y == target.y {
-        let new_target = get_rand_point();
+        let mut new_target;
+        loop {
+            new_target = get_rand_target(&obstacles);
+            if !obstacles.contains(&target){
+                break;
+            }
+        }
         target.x = new_target.x;
         target.y = new_target.y;
         paint_map(target);
@@ -222,6 +234,6 @@ fn main() {
     console::clear_console_windows();
     let actor = init_actor();
     let obstacles = init_obstacles(&actor);
-    let target = get_rand_point();
+    let target = get_rand_target(&obstacles);
     start(actor, target, obstacles);
 }
