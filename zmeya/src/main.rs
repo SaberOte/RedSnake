@@ -119,28 +119,28 @@ fn process_user_input(actor: &mut Actor) {
     }
     for c in input.chars().rev() {
         match c {
-            'w' => {
+            'w' | 'ц' => {
                 if actor.direction.y == 0 {
                     actor.direction.y = -1;
                     actor.direction.x = 0;
                 }
                 break;
             },
-            'a' => {
+            'a' | 'ф' => {
                 if actor.direction.x == 0 {
                     actor.direction.y = 0;
                     actor.direction.x = -1;
                 }
                 break;
             },
-            's' => {
+            's' | 'ы' => {
                 if actor.direction.y == 0 {
                     actor.direction.y = 1;
                     actor.direction.x = 0;
                 }
                 break;
             },
-            'd' => {
+            'd' | 'в' => {
                 if actor.direction.x == 0 {
                     actor.direction.y = 0;
                     actor.direction.x = 1;
