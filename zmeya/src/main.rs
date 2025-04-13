@@ -252,6 +252,8 @@ fn init_obstacles(actor: &Actor) -> HashSet<Point> {
 }
 
 fn main() {
+    console::set_console_utf8();
+    console::enable_virtual_terminal_processing();
     console::clear_console_windows();
     let actor = init_actor();
     let obstacles = init_obstacles(&actor);

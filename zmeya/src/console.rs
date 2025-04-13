@@ -59,6 +59,29 @@ pub fn get_user_input() -> String{
     result
 }
 
+pub fn set_console_utf8() {
+    unsafe {
+        Console::SetConsoleOutputCP(65001).expect("can't set CP"); // Set output code page to UTF-8
+        Console::SetConsoleCP(65001).expect("can't set CP");
+    }
+}
+
+pub fn enable_virtual_terminal_processing() {
+    unsafe {
+        use windows::Win32::System::Console;
+        let handle = Console::GetStdHandle(Console::STD_OUTPUT_HANDLE).expect("Failed to get handle");
+
+        let mut mode = Console::CONSOLE_MODE::default();
+        if Console::GetConsoleMode(handle, &mut mode).is_err() {
+            return; // Not a console
+        }
+
+        // ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004
+        let new_mode = mode | Console::ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+        let _ = Console::SetConsoleMode(handle, new_mode);
+    }
+}
+
 pub fn clear_console_windows() {
     unsafe {
         let handle = Console::GetStdHandle(Console::STD_OUTPUT_HANDLE).unwrap();
