@@ -7,6 +7,8 @@ use windows::Win32::Foundation::HANDLE;
 
 const MAP_WIDTH: usize = 30;
 const MAP_HEIGHT: usize = 20;
+const SCREEN_WIDTH_SIZE: usize = 3 + MAP_WIDTH * 2;
+const SCREEN_HEIGHT_SIZE: usize = 3 + MAP_HEIGHT;
 
 const DELAY: Duration = Duration::from_millis(1000);
 type Map = [[char; MAP_WIDTH]; MAP_HEIGHT];
@@ -102,7 +104,7 @@ fn init_map(actor: &Actor) -> Map{
 }
 
 fn main() {
-    console::create_new_console().expect("Failed to create new console");
+    console::create_new_console(SCREEN_WIDTH_SIZE as i16, SCREEN_HEIGHT_SIZE as i16).expect("Failed to create new console");
     let actor = init_actor();
     let map: Map = init_map(&actor);
     start(map, actor);
