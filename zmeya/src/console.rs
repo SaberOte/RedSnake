@@ -1,6 +1,6 @@
 use windows::core::Result;
 use windows::Win32::System::Console;
-use std::io::{stdout, Read, Write};
+use std::io::{stdout, Write};
 
 pub fn get_cursor() -> Result<(i16, i16)> {
     let mut info: Console::CONSOLE_SCREEN_BUFFER_INFO = Console::CONSOLE_SCREEN_BUFFER_INFO::default();

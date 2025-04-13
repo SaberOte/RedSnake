@@ -7,7 +7,7 @@ use std::time::Duration;
 const MAP_WIDTH: usize = 30;
 const MAP_HEIGHT: usize = 20;
 
-const DELAY: Duration = Duration::from_millis(1000);
+const DELAY: Duration = Duration::from_millis(2000);
 type Map = [[char; MAP_WIDTH]; MAP_HEIGHT];
 
 struct Point {
@@ -50,7 +50,7 @@ fn update_map(point: &Point, value: char) {
     }
     console::update_screen(
         cursor_x + 1 + x * 2,
-        cursor_y + 1 + y, 
+        cursor_y + 1 + y,
         value);
     console::set_cursor(cursor_x, cursor_y);
 }
@@ -76,9 +76,55 @@ fn make_step(actor: &mut Actor, delete_tail: bool) {
         x: head.x + actor.direction.x,
         y: head.y + actor.direction.y
     };
+
     // place new head position on the map
     paint_map(&new_head);
     actor.body.push_front(new_head);
+}
+
+fn process_user_input(actor: &mut Actor) {
+    let mut input_len = 32;
+    let mut input: String = String::new();
+    while input_len == 32 {
+        input = console::get_user_input();
+        input_len = input.len();
+    }
+    if input.is_empty(){
+        return;
+    }
+    for c in input.chars().rev() {
+        match c {
+            'w' => {
+                if actor.direction.y == 0 {
+                    actor.direction.y = -1;
+                    actor.direction.x = 0;
+                }
+                break;
+            },
+            'a' => {
+                if actor.direction.x == 0 {
+                    actor.direction.y = 0;
+                    actor.direction.x = -1;
+                }
+                break;
+            },
+            's' => {
+                if actor.direction.y == 0 {
+                    actor.direction.y = 1;
+                    actor.direction.x = 0;
+                }
+                break;
+            },
+            'd' => {
+                if actor.direction.x == 0 {
+                    actor.direction.y = 0;
+                    actor.direction.x = 1;
+                }
+                break;
+            },
+            _ => ()
+        }
+    }
 }
 
 fn start(mut map: Map, mut actor: Actor) {
@@ -86,6 +132,7 @@ fn start(mut map: Map, mut actor: Actor) {
     show(&mut map);
     while !game_end {
         sleep(DELAY);
+        process_user_input(&mut actor);
         make_step(&mut actor, true);
     }
 }
