@@ -165,7 +165,7 @@ fn get_rand_target(obstacles: &HashSet<Point>) -> Point {
 }
 
 fn show_end_of_game(actor: &Actor) {
-    update_map(actor.body_queue.front().unwrap(), '▧', Color::Red);
+    update_map(actor.body_queue.front().unwrap(), '█', Color::Red);
 }
 
 fn process_rules(actor: &mut Actor, target: &mut Point, obstacles: &mut HashSet<Point>) -> u8{
