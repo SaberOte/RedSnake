@@ -32,6 +32,15 @@ pub fn update_screen(x: i16, y: i16, c: String) {
 pub fn get_user_input() -> String{
     let mut read_buffer: [Console::INPUT_RECORD; 32] = [Console::INPUT_RECORD::default(); 32];
     let mut write_buffer: [Console::INPUT_RECORD; 1] = [Console::INPUT_RECORD::default(); 1];
+    write_buffer[0].EventType = Console::KEY_EVENT as u16;
+    write_buffer[0].Event.KeyEvent = Console::KEY_EVENT_RECORD {
+        bKeyDown: windows::core::BOOL(1), // Key is pressed
+        wRepeatCount: 1,
+        wVirtualKeyCode: 0,
+        wVirtualScanCode: 0,
+        uChar: Console::KEY_EVENT_RECORD_0 { UnicodeChar: '+' as u16 }, // Character 'j'
+        dwControlKeyState: 0,
+    };
     let mut read_count: u32 = 0;
     let mut write_count: u32 = 0;
     unsafe {
@@ -44,7 +53,7 @@ pub fn get_user_input() -> String{
     }
     
     let mut result = String::new();
-    for record in &read_buffer[..read_count as usize] {
+    for record in &read_buffer[..read_count as usize - 1] {
         if record.EventType == Console::KEY_EVENT as u16 {
             let key_event = unsafe { record.Event.KeyEvent };
             if key_event.bKeyDown.as_bool() {
