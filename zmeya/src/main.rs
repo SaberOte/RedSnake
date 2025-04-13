@@ -5,9 +5,7 @@ use std::thread::sleep;
 use std::time::Duration;
 
 const MAP_WIDTH: usize = 30;
-const MAP_HEIGHT: usize = 10;
-const SCREEN_WIDTH_SIZE: usize = 3 + MAP_WIDTH * 2;
-const SCREEN_HEIGHT_SIZE: usize = 3 + MAP_HEIGHT;
+const MAP_HEIGHT: usize = 20;
 
 const DELAY: Duration = Duration::from_millis(1000);
 type Map = [[char; MAP_WIDTH]; MAP_HEIGHT];
@@ -37,33 +35,39 @@ fn show(map: &Map) {
     map_str.push_str("╚");
     map_str.push_str(&"═".repeat(MAP_WIDTH*2));
     map_str.push_str("╝");
-    
-    console::set_cursor(0, 0).expect("Failed to set cursor");
+
+    let (cursor_x, cursor_y) = console::get_cursor().unwrap();
     println!("{}", map_str);
+    console::set_cursor(cursor_x, cursor_y);
 }
 
-fn update_map(map: &mut Map, point: &Point, value: char) {
+fn update_map(point: &Point, value: char) {
+    let (cursor_x, cursor_y) = console::get_cursor().unwrap();
     let x: i16 = point.x;
     let y: i16 = point.y;
     if x < 0 || x >= MAP_WIDTH as i16 || y < 0 || y >= MAP_HEIGHT as i16 {
         return;
     }
-    console::update_screen(x, y, value).expect("Failed to update screen");
+    console::update_screen(
+        cursor_x + 1 + x * 2,
+        cursor_y + 1 + y, 
+        value);
+    console::set_cursor(cursor_x, cursor_y);
 }
 
-fn paint_map(map: &mut Map, point: &Point) {
-    update_map(map, point, '█');
+fn paint_map(point: &Point) {
+    update_map(point, '█');
 }
 
-fn unpaint_map(map: &mut Map, point: &Point) {
-    update_map(map, point, ' ');
+fn unpaint_map(point: &Point) {
+    update_map(point, ' ');
 }
 
-fn make_step(map: &mut Map, actor: &mut Actor, delete_tail: bool) {
+fn make_step(actor: &mut Actor, delete_tail: bool) {
     // remove tail
     if delete_tail {
         let tail: Point = actor.body.pop_back().unwrap();
-        unpaint_map(map, &tail);
+        unpaint_map(&tail);
     }
 
     // calculate new position of the head
@@ -73,7 +77,7 @@ fn make_step(map: &mut Map, actor: &mut Actor, delete_tail: bool) {
         y: head.y + actor.direction.y
     };
     // place new head position on the map
-    paint_map(map, &new_head);
+    paint_map(&new_head);
     actor.body.push_front(new_head);
 }
 
@@ -82,7 +86,7 @@ fn start(mut map: Map, mut actor: Actor) {
     show(&mut map);
     while !game_end {
         sleep(DELAY);
-        make_step(&mut map, &mut actor, true);
+        make_step(&mut actor, true);
     }
 }
 
@@ -97,15 +101,14 @@ fn init_actor() -> Actor {
 }
 
 fn init_map(actor: &Actor) -> Map{
-    let mut map: Map = [[' '; MAP_WIDTH]; MAP_HEIGHT];
+    let map: Map = [[' '; MAP_WIDTH]; MAP_HEIGHT];
     for point in actor.body.iter() {
-        paint_map(&mut map, point);
+        paint_map(point);
     }
     map
 }
 
 fn main() {
-    // console::create_new_console(SCREEN_WIDTH_SIZE as i16, SCREEN_HEIGHT_SIZE as i16).expect("Failed to create new console");
     let actor = init_actor();
     let map: Map = init_map(&actor);
     start(map, actor);
