@@ -1,13 +1,15 @@
 use windows::core::Result;
-use windows::Win32::System::Console::{AllocConsole, FreeConsole};
+use windows::Win32::System::Console;
+use std::io;
+use std::io::{Write};
 
 
 pub fn create_new_console(width: i16, height: i16) -> Result<()> {
     unsafe {
         // free current console. One process can't use 2 console, as it says win api documentation
-        FreeConsole()?;
+        Console::FreeConsole()?;
         // Allocate a new console
-        AllocConsole()?;
+        Console::AllocConsole()?;
 
         // let mut input_buffer = [0u8; 2];
         // let mut chars_read = 0;
@@ -21,4 +23,24 @@ pub fn create_new_console(width: i16, height: i16) -> Result<()> {
 
         Ok(())
     }
+}
+
+pub fn set_cursor(x: i16, y: i16) -> Result<()> {
+    unsafe{
+        let handle = Console::GetStdHandle(Console::STD_OUTPUT_HANDLE)?;
+        Console::SetConsoleCursorPosition(handle, Console::COORD{
+            X: x,
+            Y: y
+        })?;
+    }
+    
+    Ok(())
+}
+
+pub fn update_screen(x: i16, y: i16, c: char) -> Result<()> {
+    set_cursor(1 + x * 2,
+               1 + y)?;
+    print!("{}{}", c, c);
+    io::stdout().flush()?;
+    Ok(())
 }

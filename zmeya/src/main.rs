@@ -3,10 +3,9 @@ mod console;
 use std::collections::VecDeque;
 use std::thread::sleep;
 use std::time::Duration;
-use windows::Win32::Foundation::HANDLE;
 
 const MAP_WIDTH: usize = 30;
-const MAP_HEIGHT: usize = 20;
+const MAP_HEIGHT: usize = 10;
 const SCREEN_WIDTH_SIZE: usize = 3 + MAP_WIDTH * 2;
 const SCREEN_HEIGHT_SIZE: usize = 3 + MAP_HEIGHT;
 
@@ -38,16 +37,18 @@ fn show(map: &Map) {
     map_str.push_str("╚");
     map_str.push_str(&"═".repeat(MAP_WIDTH*2));
     map_str.push_str("╝");
-
+    
+    console::set_cursor(0, 0).expect("Failed to set cursor");
     println!("{}", map_str);
 }
 
 fn update_map(map: &mut Map, point: &Point, value: char) {
     let x: i16 = point.x;
     let y: i16 = point.y;
-    if x >= 0 && x < MAP_WIDTH as i16 && y >= 0 && y < MAP_HEIGHT as i16 {
-        map[point.y as usize][point.x as usize] = value;
+    if x < 0 || x >= MAP_WIDTH as i16 || y < 0 || y >= MAP_HEIGHT as i16 {
+        return;
     }
+    console::update_screen(x, y, value).expect("Failed to update screen");
 }
 
 fn paint_map(map: &mut Map, point: &Point) {
@@ -78,8 +79,8 @@ fn make_step(map: &mut Map, actor: &mut Actor, delete_tail: bool) {
 
 fn start(mut map: Map, mut actor: Actor) {
     let game_end: bool = false;
+    show(&mut map);
     while !game_end {
-        show(&mut map);
         sleep(DELAY);
         make_step(&mut map, &mut actor, true);
     }
@@ -104,7 +105,7 @@ fn init_map(actor: &Actor) -> Map{
 }
 
 fn main() {
-    console::create_new_console(SCREEN_WIDTH_SIZE as i16, SCREEN_HEIGHT_SIZE as i16).expect("Failed to create new console");
+    // console::create_new_console(SCREEN_WIDTH_SIZE as i16, SCREEN_HEIGHT_SIZE as i16).expect("Failed to create new console");
     let actor = init_actor();
     let map: Map = init_map(&actor);
     start(map, actor);
