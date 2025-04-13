@@ -1,7 +1,7 @@
 mod console;
 
 use std::collections::{VecDeque, HashSet};
-use std::io::{stdout, Write};
+use std::io::{stdin, stdout, Write};
 use std::thread::sleep;
 use std::time::Duration;
 
@@ -170,7 +170,8 @@ fn show_end_of_game(actor: &Actor) {
     println!("Game over! Thanks for playing!✨");
     print!("Press any key to exit . . .");
     stdout().flush().expect("Failed to flush stdout");
-    sleep(Duration::from_millis(200));
+    sleep(Duration::from_millis(1000));
+    let _ = console::get_user_input();
     loop {
         let input = console::get_user_input();
         if !input.is_empty() {
