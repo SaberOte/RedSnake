@@ -8,6 +8,7 @@ const MAP_WIDTH: usize = 30;
 const MAP_HEIGHT: usize = 20;
 
 const DELAY: Duration = Duration::from_millis(100);
+const ACTOR_COLOR: Color = Color::BrightRed;
 
 #[derive(Eq, PartialEq)]
 #[derive(Hash)]
@@ -22,12 +23,19 @@ struct Actor {
     direction: Point
 }
 
+enum Color {
+    Red,
+    BrightRed,
+    Green,
+}
+
 fn show(actor: &Actor, target: &Point) {
     // show map
     let map_line = format!("║{}║\n", " ".repeat(MAP_WIDTH*2));
     let lower_border = &"═".repeat(MAP_WIDTH*2);
     let map = format!(
-        "╔{}╗\n{}╚{}╝",
+        "\x1b[{}m╔{}╗\n{}╚{}╝\x1b[0m",
+        90,
         lower_border,
         map_line.repeat(MAP_HEIGHT),
         lower_border
@@ -39,33 +47,39 @@ fn show(actor: &Actor, target: &Point) {
 
     // show actor
     for point in actor.body_queue.iter() {
-        paint_map(point);
+        paint_map(point, ACTOR_COLOR);
         console::set_cursor(cursor_x, cursor_y);
     }
 
     // show target
-    paint_map(target);
+    paint_map(target, Color::Green);
     console::set_cursor(cursor_x, cursor_y);
 }
 
-fn update_map(point: &Point, value: char) {
+fn update_map(point: &Point, value: char, color: Color) {
     let (cursor_x, cursor_y) = console::get_cursor().unwrap();
     let x: i16 = point.x;
     let y: i16 = point.y;
+    let color_code = match color {
+        Color::Red => 31,
+        Color::BrightRed => 91,
+        Color::Green => 32,
+    };
+    let text: String = format!("\x1b[{}m{}{}\x1b[0m", color_code, value, value);
 
     console::update_screen(
         cursor_x + 1 + x * 2,
         cursor_y + 1 + y,
-        value);
+        text);
     console::set_cursor(cursor_x, cursor_y);
 }
 
-fn paint_map(point: &Point) {
-    update_map(point, '█');
+fn paint_map(point: &Point, color: Color) {
+    update_map(point, '█', color);
 }
 
 fn unpaint_map(point: &Point) {
-    update_map(point, ' ');
+    update_map(point, ' ', Color::BrightRed);
 }
 
 fn make_step(actor: &mut Actor, delete_tail: bool, obstacles: &mut HashSet<Point>) {
@@ -88,7 +102,7 @@ fn make_step(actor: &mut Actor, delete_tail: bool, obstacles: &mut HashSet<Point
     }
 
     // place new head position on the map
-    paint_map(&new_head);
+    paint_map(&new_head, ACTOR_COLOR);
     actor.body_queue.push_front(new_head);
 }
 
@@ -151,7 +165,7 @@ fn get_rand_target(obstacles: &HashSet<Point>) -> Point {
 }
 
 fn show_end_of_game(actor: &Actor) {
-    update_map(actor.body_queue.front().unwrap(), 'X');
+    update_map(actor.body_queue.front().unwrap(), '▧', Color::Red);
 }
 
 fn process_rules(actor: &mut Actor, target: &mut Point, obstacles: &mut HashSet<Point>) -> u8{
@@ -177,7 +191,7 @@ fn process_rules(actor: &mut Actor, target: &mut Point, obstacles: &mut HashSet<
         let new_target = get_rand_target(&obstacles);
         target.x = new_target.x;
         target.y = new_target.y;
-        paint_map(target);
+        paint_map(target, Color::Green);
         return 1;
     }
 

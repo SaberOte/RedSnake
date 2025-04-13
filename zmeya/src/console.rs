@@ -22,10 +22,10 @@ pub fn set_cursor(x: i16, y: i16) {
     }
 }
 
-pub fn update_screen(x: i16, y: i16, c: char) {
+pub fn update_screen(x: i16, y: i16, c: String) {
     set_cursor(x, y);
     let mut lock = stdout().lock();
-    write!(lock, "{}{}", c, c).unwrap();
+    write!(lock, "{}", c).unwrap();
     stdout().flush().expect("Failed to flush stdout");
 }
 
