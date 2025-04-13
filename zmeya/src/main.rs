@@ -7,7 +7,7 @@ use std::time::Duration;
 const MAP_WIDTH: usize = 30;
 const MAP_HEIGHT: usize = 20;
 
-const DELAY: Duration = Duration::from_millis(2000);
+const DELAY: Duration = Duration::from_millis(200);
 type Map = [[char; MAP_WIDTH]; MAP_HEIGHT];
 
 struct Point {
@@ -20,24 +20,29 @@ struct Actor {
     direction: Point
 }
 
-fn show(map: &Map) {
-    let mut map_str = String::from("╔");
-    map_str.push_str(&"═".repeat(MAP_WIDTH*2));
-    map_str.push_str("╗\n");
-    for row in map.iter() {
-        map_str.push('║');
-        for cell in row.iter(){
-            map_str.push(*cell);
-            map_str.push(*cell);
-        }
-        map_str.push_str("║\n");
-    }
-    map_str.push_str("╚");
-    map_str.push_str(&"═".repeat(MAP_WIDTH*2));
-    map_str.push_str("╝");
+fn show(actor: &Actor, target: &Point) {
+    // show map
+    let map_line = format!("║{}║\n", " ".repeat(MAP_WIDTH*2));
+    let lower_border = &"═".repeat(MAP_WIDTH*2);
+    let map = format!(
+        "╔{}╗\n{}╚{}╝",
+        lower_border,
+        map_line.repeat(MAP_HEIGHT),
+        lower_border
+    );
 
     let (cursor_x, cursor_y) = console::get_cursor().unwrap();
-    println!("{}", map_str);
+    println!("{}", map);
+    console::set_cursor(cursor_x, cursor_y);
+
+    // show actor
+    for point in actor.body.iter() {
+        paint_map(point);
+        console::set_cursor(cursor_x, cursor_y);
+    }
+
+    // show target
+    paint_map(target);
     console::set_cursor(cursor_x, cursor_y);
 }
 
@@ -127,13 +132,46 @@ fn process_user_input(actor: &mut Actor) {
     }
 }
 
-fn start(mut map: Map, mut actor: Actor) {
-    let game_end: bool = false;
-    show(&mut map);
-    while !game_end {
+fn get_rand_point() -> Point {
+    Point {
+        x: rand::random_range(0..MAP_WIDTH as i16),
+        y: rand::random_range(0..MAP_HEIGHT as i16)
+    }
+}
+
+fn process_rules(actor: &Actor, target: &mut Point) -> u8{
+    let head = actor.body.front().unwrap();
+    let x: i16 = head.x;
+    let y: i16 = head.y;
+
+    // end of the game: face the wall
+    if x < 0 || x >= MAP_WIDTH as i16 || y < 0 || y >= MAP_HEIGHT as i16 {
+        return 2;
+    }
+
+    // end of the game: face body
+    
+
+    // target is eaten
+    if x == target.x && y == target.y {
+        let new_target = get_rand_point();
+        target.x = new_target.x;
+        target.y = new_target.y;
+        return 1;
+    }
+
+    0
+}
+
+fn start(mut actor: Actor, mut target: Point) {
+    let mut game_status: u8 = 0;
+    show(&actor, &target);
+
+    while game_status <= 1 {
         sleep(DELAY);
         process_user_input(&mut actor);
-        make_step(&mut actor, true);
+        make_step(&mut actor, game_status != 1);
+        game_status = process_rules(&actor, &mut target);
     }
 }
 
@@ -147,16 +185,8 @@ fn init_actor() -> Actor {
     }
 }
 
-fn init_map(actor: &Actor) -> Map{
-    let map: Map = [[' '; MAP_WIDTH]; MAP_HEIGHT];
-    for point in actor.body.iter() {
-        paint_map(point);
-    }
-    map
-}
-
 fn main() {
     let actor = init_actor();
-    let map: Map = init_map(&actor);
-    start(map, actor);
+    let target = get_rand_point();
+    start(actor, target);
 }
