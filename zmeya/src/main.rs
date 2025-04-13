@@ -1,6 +1,7 @@
 mod console;
 
 use std::collections::{VecDeque, HashSet};
+use std::io::{stdout, Write};
 use std::thread::sleep;
 use std::time::Duration;
 
@@ -167,6 +168,9 @@ fn get_rand_target(obstacles: &HashSet<Point>) -> Point {
 fn show_end_of_game(actor: &Actor) {
     update_map(actor.body_queue.front().unwrap(), '░', Color::Red);
     println!("Game over! Thanks for playing!✨");
+    print!("Press any key to exit...");
+    stdout().flush().expect("Failed to flush stdout");
+    std::io::stdin().read_line(&mut String::new()).unwrap();
 }
 
 fn process_rules(actor: &mut Actor, target: &mut Point, obstacles: &mut HashSet<Point>) -> u8{
