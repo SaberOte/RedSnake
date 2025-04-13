@@ -1,6 +1,6 @@
 mod console;
 
-use std::collections::VecDeque;
+use std::collections::{VecDeque, HashSet};
 use std::thread::sleep;
 use std::time::Duration;
 
@@ -10,13 +10,17 @@ const MAP_HEIGHT: usize = 20;
 const DELAY: Duration = Duration::from_millis(200);
 type Map = [[char; MAP_WIDTH]; MAP_HEIGHT];
 
+#[derive(Eq, PartialEq)]
+#[derive(Hash)]
+#[derive(Clone)]
 struct Point {
     x: i16,
     y: i16
 }
 
 struct Actor {
-    body: VecDeque<Point>,
+    body_queue: VecDeque<Point>,
+    body_set: HashSet<Point>,
     direction: Point
 }
 
@@ -36,7 +40,7 @@ fn show(actor: &Actor, target: &Point) {
     console::set_cursor(cursor_x, cursor_y);
 
     // show actor
-    for point in actor.body.iter() {
+    for point in actor.body_queue.iter() {
         paint_map(point);
         console::set_cursor(cursor_x, cursor_y);
     }
@@ -71,12 +75,13 @@ fn unpaint_map(point: &Point) {
 fn make_step(actor: &mut Actor, delete_tail: bool) {
     // remove tail
     if delete_tail {
-        let tail: Point = actor.body.pop_back().unwrap();
+        let tail: Point = actor.body_queue.pop_back().unwrap();
+        actor.body_set.remove(&tail);
         unpaint_map(&tail);
     }
 
     // calculate new position of the head
-    let head: &Point = actor.body.front().unwrap();
+    let head: &Point = actor.body_queue.front().unwrap();
     let new_head: Point = Point{
         x: head.x + actor.direction.x,
         y: head.y + actor.direction.y
@@ -84,7 +89,8 @@ fn make_step(actor: &mut Actor, delete_tail: bool) {
 
     // place new head position on the map
     paint_map(&new_head);
-    actor.body.push_front(new_head);
+    actor.body_set.insert(new_head.clone());
+    actor.body_queue.push_front(new_head);
 }
 
 fn process_user_input(actor: &mut Actor) {
@@ -140,7 +146,7 @@ fn get_rand_point() -> Point {
 }
 
 fn process_rules(actor: &Actor, target: &mut Point) -> u8{
-    let head = actor.body.front().unwrap();
+    let head = actor.body_queue.front().unwrap();
     let x: i16 = head.x;
     let y: i16 = head.y;
 
@@ -177,11 +183,14 @@ fn start(mut actor: Actor, mut target: Point) {
 }
 
 fn init_actor() -> Actor {
+    let points = [
+        Point { x: MAP_WIDTH as i16 / 2, y: MAP_HEIGHT as i16 / 2 },
+        Point { x: MAP_WIDTH as i16 / 2 - 1, y: MAP_HEIGHT as i16 / 2 }
+    ];
+    let set = HashSet::from_iter(points.iter().cloned());
     Actor {
-        body: VecDeque::from([
-            Point { x: MAP_WIDTH as i16 / 2, y: MAP_HEIGHT as i16 / 2 },
-            Point { x: MAP_WIDTH as i16 / 2 - 1, y: MAP_HEIGHT as i16 / 2 }
-        ]),
+        body_queue: VecDeque::from(points),
+        body_set: set,
         direction: Point { x: 1, y: 0 }
     }
 }
