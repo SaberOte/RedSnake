@@ -19,7 +19,6 @@ struct Point {
 
 struct Actor {
     body_queue: VecDeque<Point>,
-    body_set: HashSet<Point>,
     direction: Point
 }
 
@@ -53,9 +52,7 @@ fn update_map(point: &Point, value: char) {
     let (cursor_x, cursor_y) = console::get_cursor().unwrap();
     let x: i16 = point.x;
     let y: i16 = point.y;
-    if x < 0 || x >= MAP_WIDTH as i16 || y < 0 || y >= MAP_HEIGHT as i16 {
-        return;
-    }
+
     console::update_screen(
         cursor_x + 1 + x * 2,
         cursor_y + 1 + y,
@@ -71,20 +68,24 @@ fn unpaint_map(point: &Point) {
     update_map(point, ' ');
 }
 
-fn make_step(actor: &mut Actor, delete_tail: bool) {
-    // remove tail
-    if delete_tail {
-        let tail: Point = actor.body_queue.pop_back().unwrap();
-        actor.body_set.remove(&tail);
-        unpaint_map(&tail);
-    }
-
+fn make_step(actor: &mut Actor, delete_tail: bool, obstacles: &mut HashSet<Point>) {
     // calculate new position of the head
     let head: &Point = actor.body_queue.front().unwrap();
     let new_head: Point = Point{
         x: head.x + actor.direction.x,
         y: head.y + actor.direction.y
     };
+
+    if obstacles.contains(&new_head) {
+        return;
+    }
+
+    // remove tail
+    if delete_tail {
+        let tail: Point = actor.body_queue.pop_back().unwrap();
+        obstacles.remove(&tail);
+        unpaint_map(&tail);
+    }
 
     // place new head position on the map
     paint_map(&new_head);
@@ -143,7 +144,7 @@ fn get_rand_point() -> Point {
     }
 }
 
-fn process_rules(actor: &mut Actor, target: &mut Point) -> u8{
+fn process_rules(actor: &mut Actor, target: &mut Point, obstacles: &mut HashSet<Point>) -> u8{
     let head = actor.body_queue.front().unwrap();
     let x: i16 = head.x;
     let y: i16 = head.y;
@@ -154,11 +155,11 @@ fn process_rules(actor: &mut Actor, target: &mut Point) -> u8{
     }
 
     // end of the game: face body
-    if actor.body_set.contains(head) {
+    if obstacles.contains(head) {
         return 2;
     }
     else {
-        actor.body_set.insert(head.clone());
+        obstacles.insert(head.clone());
     }
 
     // target is eaten
@@ -173,15 +174,15 @@ fn process_rules(actor: &mut Actor, target: &mut Point) -> u8{
     0
 }
 
-fn start(mut actor: Actor, mut target: Point) {
+fn start(mut actor: Actor, mut target: Point, mut obstacles: HashSet<Point>) {
     let mut game_status: u8 = 0;
     show(&actor, &target);
 
     while game_status <= 1 {
         sleep(DELAY);
         process_user_input(&mut actor);
-        make_step(&mut actor, game_status != 1);
-        game_status = process_rules(&mut actor, &mut target);
+        make_step(&mut actor, game_status != 1, &mut obstacles);
+        game_status = process_rules(&mut actor, &mut target, &mut obstacles);
     }
 }
 
@@ -190,17 +191,37 @@ fn init_actor() -> Actor {
         Point { x: MAP_WIDTH as i16 / 2, y: MAP_HEIGHT as i16 / 2 },
         Point { x: MAP_WIDTH as i16 / 2 - 1, y: MAP_HEIGHT as i16 / 2 }
     ];
-    let set = HashSet::from_iter(points.iter().cloned());
     Actor {
         body_queue: VecDeque::from(points),
-        body_set: set,
         direction: Point { x: 1, y: 0 }
     }
+}
+
+fn init_obstacles(actor: &Actor) -> HashSet<Point> {
+    let mut obstacles = HashSet::new();
+
+    // set with body of the actor
+    for p in actor.body_queue.iter() {
+        obstacles.insert(p.clone());
+    }
+
+    // set with the walls
+    for x in 0..MAP_WIDTH as i16 {
+        obstacles.insert(Point { x, y: -1 });
+        obstacles.insert(Point { x, y: MAP_HEIGHT as i16 });
+    }
+    for y in 0..MAP_HEIGHT as i16 {
+        obstacles.insert(Point { x: -1, y });
+        obstacles.insert(Point { x: MAP_WIDTH as i16, y });
+    }
+
+    obstacles
 }
 
 fn main() {
     console::clear_console_windows();
     let actor = init_actor();
+    let obstacles = init_obstacles(&actor);
     let target = get_rand_point();
-    start(actor, target);
+    start(actor, target, obstacles);
 }
