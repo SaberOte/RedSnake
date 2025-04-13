@@ -8,7 +8,6 @@ const MAP_WIDTH: usize = 30;
 const MAP_HEIGHT: usize = 20;
 
 const DELAY: Duration = Duration::from_millis(200);
-type Map = [[char; MAP_WIDTH]; MAP_HEIGHT];
 
 #[derive(Eq, PartialEq)]
 #[derive(Hash)]
@@ -89,7 +88,6 @@ fn make_step(actor: &mut Actor, delete_tail: bool) {
 
     // place new head position on the map
     paint_map(&new_head);
-    actor.body_set.insert(new_head.clone());
     actor.body_queue.push_front(new_head);
 }
 
@@ -145,7 +143,7 @@ fn get_rand_point() -> Point {
     }
 }
 
-fn process_rules(actor: &Actor, target: &mut Point) -> u8{
+fn process_rules(actor: &mut Actor, target: &mut Point) -> u8{
     let head = actor.body_queue.front().unwrap();
     let x: i16 = head.x;
     let y: i16 = head.y;
@@ -156,7 +154,12 @@ fn process_rules(actor: &Actor, target: &mut Point) -> u8{
     }
 
     // end of the game: face body
-    
+    if actor.body_set.contains(head) {
+        return 2;
+    }
+    else {
+        actor.body_set.insert(head.clone());
+    }
 
     // target is eaten
     if x == target.x && y == target.y {
@@ -178,7 +181,7 @@ fn start(mut actor: Actor, mut target: Point) {
         sleep(DELAY);
         process_user_input(&mut actor);
         make_step(&mut actor, game_status != 1);
-        game_status = process_rules(&actor, &mut target);
+        game_status = process_rules(&mut actor, &mut target);
     }
 }
 
