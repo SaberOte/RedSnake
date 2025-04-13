@@ -58,3 +58,32 @@ pub fn get_user_input() -> String{
     }
     result
 }
+
+pub fn clear_console_windows() {
+    unsafe {
+        let handle = Console::GetStdHandle(Console::STD_OUTPUT_HANDLE).unwrap();
+
+        // Get console info to find the size of the screen buffer
+        let mut console_info = Console::CONSOLE_SCREEN_BUFFER_INFO::default();
+        Console::GetConsoleScreenBufferInfo(handle, &mut console_info).unwrap();
+
+        let console_size = console_info.dwSize.X as u32 * console_info.dwSize.Y as u32;
+        let coord = Console::COORD { X: 0, Y: 0 };
+
+        // Fill the console with spaces
+        let mut chars_written = 0;
+        Console::FillConsoleOutputCharacterA(handle, b' ' as i8, console_size, coord, &mut chars_written).unwrap();
+
+        // Reset the attributes
+        Console::FillConsoleOutputAttribute(
+            handle,
+            console_info.wAttributes.0,
+            console_size,
+            coord,
+            &mut chars_written
+        ).unwrap();
+
+        // Move cursor to top-left corner
+        Console::SetConsoleCursorPosition(handle, coord).unwrap();
+    }
+}

@@ -199,6 +199,7 @@ fn init_actor() -> Actor {
 }
 
 fn main() {
+    console::clear_console_windows();
     let actor = init_actor();
     let target = get_rand_point();
     start(actor, target);
