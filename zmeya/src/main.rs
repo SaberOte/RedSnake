@@ -1,6 +1,9 @@
+mod console;
+
 use std::collections::VecDeque;
-use std::{thread};
+use std::thread::sleep;
 use std::time::Duration;
+use windows::Win32::Foundation::HANDLE;
 
 const MAP_WIDTH: usize = 30;
 const MAP_HEIGHT: usize = 20;
@@ -33,7 +36,8 @@ fn show(map: &Map) {
     map_str.push_str("╚");
     map_str.push_str(&"═".repeat(MAP_WIDTH*2));
     map_str.push_str("╝");
-    print!("{}", map_str)
+
+    println!("{}", map_str);
 }
 
 fn update_map(map: &mut Map, point: &Point, value: char) {
@@ -71,9 +75,10 @@ fn make_step(map: &mut Map, actor: &mut Actor, delete_tail: bool) {
 }
 
 fn start(mut map: Map, mut actor: Actor) {
-    loop {
+    let game_end: bool = false;
+    while !game_end {
         show(&mut map);
-        thread::sleep(DELAY);
+        sleep(DELAY);
         make_step(&mut map, &mut actor, true);
     }
 }
@@ -97,7 +102,8 @@ fn init_map(actor: &Actor) -> Map{
 }
 
 fn main() {
-    let mut actor = init_actor();
-    let mut map: Map = init_map(&actor);
+    console::create_new_console().expect("Failed to create new console");
+    let actor = init_actor();
+    let map: Map = init_map(&actor);
     start(map, actor);
 }
