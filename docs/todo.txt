@@ -9,3 +9,10 @@ Make command line arguments:
 --width <width>
 --height <height>
 --delay <delay>
+--random-seed <seed>
+--manual-step
+--auto-step
+
+Make score
+Make table of records
+Use some character set instead unicode
