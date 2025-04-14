@@ -1,0 +1,11 @@
+TODO:
+Make command line arguments:
+--help
+--no-color
+--color
+--no-unicode
+--no-walls
+--walls
+--width <width>
+--height <height>
+--delay <delay>
