@@ -8,7 +8,7 @@ use std::time::Duration;
 const MAP_WIDTH: usize = 30;
 const MAP_HEIGHT: usize = 20;
 
-const DELAY: Duration = Duration::from_millis(75);
+const DELAY: Duration = Duration::from_millis(69);
 const ACTOR_COLOR: Color = Color::BrightRed;
 
 #[derive(Eq, PartialEq)]
